@@ -2,6 +2,7 @@ var orderedDeck = [2, 3, 4, 5, 6, 7, 8, 9, 10, 'j', 'q', 'k', 'a'];
 var deck = [];
 var humHand = [];
 var cpuHand = [];
+var x = [];
 
 function makeDeck(deck, orderedDeck) {
   for (var i = 0; i < 4; i++) {
@@ -21,13 +22,13 @@ function shuffle(udeck) {
 function draw(deck, hand) {
   var card = deck.pop();
   hand.push(card);
+  paint();
 }
 
 function guess(card, yourHand, oppHand) {
   var again = false;
-  while(oppHand.indexOf(card) > -1) {
+  while(oppHand.indexOf(card) > - 1) {
     again = true;
-    console.log(oppHand);
     yourHand.push(oppHand.splice(oppHand.indexOf(card), 1)[0]);
   }
   return again;
@@ -54,22 +55,44 @@ function cpuGo() {
   var again = false;
   console.log(tarCard);
   again = guess(tarCard, cpuHand, humHand);
+  check(cpuHand);
   paint();
   if(again){
     console.log("again");
     cpuGo();
   }
+  else {
+    draw(deck, cpuHand);
+  }
 }
 
-function check(deck){
-  for (var i = 0; i < deck.length; i++) {
-    deck[i] //inprogress
+function check(hand){
+  var count = {};
+  for (var i = 0; i < hand.length; i++) {
+    if (!count.hasOwnProperty(hand[i])) {
+      count[hand[i]] = 0;
+    }
+    count[hand[i]] += 1;
+  }
+  for (k in count) {
+    if (count[k] === 4){
+      if(!isNaN(k)){
+        k = parseInt(k);
+      }
+      while (hand.indexOf(k) > -1) {
+        x.push(hand.splice(hand.indexOf(k), 1)[0]);
+      }
+      $("#books").append($("<div>" + k + "</div>"));
+    }
   }
 }
 
 function start() {
   deck = makeDeck(deck, orderedDeck);
   deck = shuffle(deck);
+
+  humHand = [];
+  cpuHand = [];
 
   for (var i = 0; i < 7; i++) {
     draw(deck, humHand);
@@ -80,10 +103,15 @@ function start() {
 
 $("#hum").click(function(event) {
   var again = false;
-  tarCard = parseInt($(event.target).text(), 10);
-  guess(tarCard, humHand, cpuHand);
+  var tarCard = $(event.target).text();
+  if(!isNaN(tarCard)){
+    tarCard = parseInt(tarCard);
+  }
+  again = guess(tarCard, humHand, cpuHand);
+  check(humHand);
   paint();
   if(!again){
+    draw(deck, humHand);
     cpuGo();
   }
 })
